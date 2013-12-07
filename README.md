@@ -15,5 +15,5 @@ These are some things I made for various purposes:
     Is a small fun project I made to make little (or big) animations with the use of plain ASCII
     
 3) multiselect
-    I hate those multisselect... they dont work that good, and often users dont get the multiselect part.
+    I hate those multiselect elements... they dont work that good, and often users dont get the multiselect part.
     I made a replacement multiselect that replaces the original object with a checkbox variant.
