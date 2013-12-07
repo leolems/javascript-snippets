@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <style type="text/css">
+     #thumbs 	{padding:8px;border:1px solid #ccc;}
+	 .even 		{background-color:#eee;}
+  </style>
+</head>
+
+<body>
+<div id="thumbs"></div>
+
+
+<script type="text/javascript">
+
+/*----------------------------------------------------------
+//   Micro JavaScript Templating   xtpl (minified version)
+//   Leo Lems - http://2basix.nl - MIT Licensed
+------------------------------------------------------------*/
+(function(){this.xtpl=function xtpl(templatestring,data){var ret='',xfn=new Function("o","var arr=['"+templatestring.replace(/[\r\t\n]/g,"").split("'").join("\\'").replace(/{%=\s*\(\s*(.+?)\s*\)\s*%}/g,"',($1),'").replace(/{%=\s*(.+?)\s*%}/g,"',(o.$1)?o.$1:'','")+"']; return arr.join('');");if(!data){return xfn}return xfn(data)}})();
+
+
+/*=============================================================================
+==-- 							Template string NOTES
+-------------------------------------------------------------------------------
+{%=id%}		regular tag, that will be replaced by the data (if present)
+{%=text%}	again a data element
+{%= ( i % 2 == 1 ? \"even\" : \"\" ) %}
+			This is some JS that will be executed, in this case i comes from
+			a level above, and will set a class
+			
+			NOTICE it uses the i variable !!!
+==============================================================================*/
+
+var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( i % 2 == 1 ? \"even\" : \"\" ) %}\">{%=text%}</div>";
+var html="";	
+// some json test data (4 records)
+var data2= [ 	{id:"1", text:"John says... Hello you JS devs.. "},
+				{id:"2", text:"this is a second line"},
+				{id:"3", text:"the third line"},
+				{id:"4", text:"The finishing line"}  ];
+				
+				
+// generate our rendering function !!!
+var Tfunc = xtpl(thetemplate);
+
+// generate the html using our Tfunc
+for (i = 0; i < data2.length; i++ ) {
+	html += Tfunc( data2[i] );
+}
+
+// output the html
+$('#thumbs').html(html);
+</script>
+
+</body>
+</html>
