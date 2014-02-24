@@ -2,43 +2,40 @@
 <head>
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 <style type="text/css">
-	.silmultiselect { 	background-color: #EEEEEE;
-						border: 1px solid #EEEEEE;
-						display: inline-block;
-						max-width: 400px;
-						min-width: 200px;
-						vertical-align: top;  }
-	.newMultiselectOriginal { display:none; }
-	.silmultiselect .silmultioptions { background-color:#fff; border-top: 1px solid #eee;  min-width: 200px; max-width:400px; overflow:auto;}
-	.silmultiselect label { margin-left: 5px; position: relative; top: 6px; vertical-align: top;}
-	.silmultiselect input[type="checkbox"] { margin: 8px; }
+.silmultiselect { background-color: #EEEEEE;
+border: 1px solid #EEEEEE;
+display: inline-block;
+max-width: 400px;
+min-width: 200px;
+vertical-align: top; }
+.newMultiselectOriginal { display:none; }
+.silmultiselect .silmultioptions { background-color:#fff; border-top: 1px solid #eee; min-width: 200px; max-width:400px; overflow:auto;}
+.silmultiselect label { margin-left: 5px; position: relative; top: 6px; vertical-align: top;}
+.silmultiselect input[type="checkbox"] { margin: 8px; }
 </style>
 
 <script type="text/javascript">
-	/*---------------------------------------------------------- 
-	//   Micro JavaScript Templating   xtpl (minified version)
-	//   Leo Lems - http://2basix.nl - MIT Licensed
+	/*----------------------------------------------------------
+	// Micro JavaScript Templating xtpl (minified version)
+	// Leo Lems - http://2basix.nl - MIT Licensed
 	------------------------------------------------------------*/
 	(function(){this.xtpl=function xtpl(templatestring,data){var ret='',xfn=new Function("o","var arr=['"+templatestring.replace(/[\r\t\n]/g,"").split("'").join("\\'").replace(/{%=\s*\(\s*(.+?)\s*\)\s*%}/g,"',($1),'").replace(/{%=\s*(.+?)\s*%}/g,"',(o.$1)?o.$1:'','")+"']; return arr.join('');");if(!data){return xfn}return xfn(data)}})();
 
 
 	var tpl= { multibtns:{} };
-	tpl.multibtns.select = "<button onclick=\"$(this).parent().find('input').attr('checked','checked').trigger('change');\">Select all</button>";
-	tpl.multibtns.deselect = "<button onclick=\"$(this).parent().find('input').attr('checked','').trigger('change');\">Deselect all</button>";
+	tpl.multibtns.select = "<button onclick=\"$(this).parent().find('input').prop('checked','checked').trigger('change');\">Select all</button>";
+	tpl.multibtns.deselect = "<button onclick=\"$(this).parent().find('input').prop('checked','').trigger('change');\">Deselect all</button>";
 	tpl.multibtns.toggle = "<button onclick=\"$(this).parent().find('input').trigger('click').trigger('change');\">Toggle select</button>";
 	tpl.multibtnsoptionwrapper = "<div class=\"silmultioptions\" style=\"{%=style%}\" >{%=options%}</div>";
 	tpl.multioption = "<input id=\"{%=uniqueid%}\" type=\"checkbox\" {%=checked%} value=\"{%=value%}\" /><label for=\"{%=uniqueid%}\">{%=text%}</label><br />"
 	tpl.multiwrapper = "<div class=\"silmultiselect\" id=\"{%=theunid%}\">{%=btns%}{%=content%}</div>"
 
-	
+
 	/*============================================================================================
-		FUNCTION : activateNewMultiSelect()
-		
-		Replaces a regular multi select box <select multiple> with a checkbox variant 
-		
-		The original selectbox will be left untouched!
-		
-		Author : L.lems
+	FUNCTION : activateNewMultiSelect()
+	Replaces a regular multi select box <select multiple> with a checkbox variant
+	The original selectbox will be left untouched!
+	Author : L.lems
 	============================================================================================*/
 	function activateNewMultiSelect() {
 
@@ -46,51 +43,52 @@
 			var me = $(this), opt;
 			var htmltotal="", htmlbuttons="", htmloptions="";
 			var unid, thetext, thevalue, checked;
-			
+
 			if (me.hasClass("newMultiselectOriginal")) { return false }
-			
-			if (me.hasClass("multibuttons")) { 
-				htmlbuttons = tpl.multibtns.select + tpl.multibtns.deselect + tpl.multibtns.toggle;
+
+			if (me.hasClass("multibuttons")) {
+			htmlbuttons = tpl.multibtns.select + tpl.multibtns.deselect + tpl.multibtns.toggle;
 			}
-			
+
 			var Options_Rfunc = xtpl(tpl.multioption);
-			
+
 			if (me.attr('multiple')) {
-				
+
 				// create the options html with checkboxes
 				me.find('option').each( function() {
 					var me = $(this);
 					thetext = me.text();
 					thevalue = me.val();
-					ischecked = me.attr('selected') ? 'checked="checked"':'';
-					
+					ischecked = me.prop('selected') ? 'checked="checked"':'';
+
 					unid = 'opt' + new Date().getTime() + Math.floor(Math.random() * 100) + 1 ;
-					htmloptions += Options_Rfunc( { uniqueid: unid, checked: ischecked, text:thetext, value:thevalue  });
+					htmloptions += Options_Rfunc( { uniqueid: unid, checked: ischecked, text:thetext, value:thevalue });
 				});
-				
+
 				var height = me.outerHeight();
 				// create the options html wrapper
 				Options_Rfunc = xtpl(tpl.multibtnsoptionwrapper);
-				htmloptions = Options_Rfunc( { options: htmloptions, style:"height:"+height+"px;"  });
+				htmloptions = Options_Rfunc( { options: htmloptions, style:"height:"+height+"px;" });
 				unid = 'sel' + new Date().getTime() + Math.floor(Math.random() * 100) + 1 ;
 				var Total_Rfunc = xtpl(tpl.multiwrapper);
-				htmltotal = Total_Rfunc( {content: htmloptions, btns: htmlbuttons, theunid : unid  } )
-					
-		
+				htmltotal = Total_Rfunc( {content: htmloptions, btns: htmlbuttons, theunid : unid } )
+
+
 				// insert the new html after the original selectbox
 				me.after(htmltotal);
 				me.addClass(unid);
-				me.addClass("newMultiselectOriginal");		// hide the original select
-				
-				
+				me.addClass("newMultiselectOriginal");	// hide the original select
+
+
 				// Take care of updates... so push the new values to the original selectbox
-				$('#'+unid).find('input[type="checkbox"]').change( function() {     
+				$('#'+unid).find('input[type="checkbox"]').change( function() {
+					console.log('sdfds')
 					var me = $(this);
 					var id = me.parents('div.silmultiselect').attr('id');
 					var orgselect = $('select.'+id);
 					var newvalue = me.val();
 					var selectit = me.attr('checked') ? 'selected':'';
-					
+
 					// find the correct option inside the original select
 					orgselect.find('option').each( function(i,elm) {
 						var option = $(this);
@@ -103,11 +101,11 @@
 			}
 		});
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	$(document).ready(function() {
 		// onready
 		if ($('select.newmultiselect').length > 0) {
@@ -161,8 +159,8 @@
 <br /><br />
 <h2>This is an example for the (new) multiselect boxes UI</h2>
 <div class="silmultiselect multibuttons">
-	<button onclick="$(this).parent().find('input').attr('checked','checked');" />select all</button> 
-	<button onclick="$(this).parent().find('input').attr('checked','');" />Deselect all</button>
+	<button onclick="$(this).parent().find('input').prop('checked','checked');" />select all</button>
+	<button onclick="$(this).parent().find('input').prop('checked','');" />Deselect all</button>
 	<button onclick="$(this).parent().find('input').trigger('click');" />Toggle select</button>
 	<div class="silmultioptions">
 		<input id="aaa" type="checkbox" value="xxx" /><label for="aaa">Text aaa</label><br />
