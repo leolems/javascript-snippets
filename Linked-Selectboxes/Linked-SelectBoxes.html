@@ -1,0 +1,103 @@
+<html>
+<head>
+<!-- <script src="jquery42.js"></script>  -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script type="text/javascript" src="https://raw.githubusercontent.com/appendto/amplify/master/lib/amplify.min.js"></script>
+<script type="text/javascript" src="https://raw.githubusercontent.com/SamWM/jQuery-Plugins/master/selectboxes/jquery.selectboxes.js"></script>
+
+
+<style type="text/css">
+	.selectstyle { 	background-color: #ddd;
+						border: 1px solid #ccc;
+						display: inline-block;
+						max-width: 400px;
+						min-width: 200px;
+						vertical-align: top;  }
+	.selectstyle:focus { background-color: #ddF;
+						 border: 1px solid #00F;	} 			
+</style>
+
+<script type="text/javascript">
+
+
+//==========================================================	
+//==-- Start the magic	
+//==========================================================
+	var selectboxdata = {
+			a1:[ { f1:"value f1 from a1"  },{ f2:"value f2 from a1"  },{ f3:"value f3 from a1"} ],
+			a2:[ { f1:"value f1 from a2"  },{ f2:"value f2 from a2"  },{ f3:"value f3 from a2"},{ f4:"value f4 from a2"} ],
+			a3:[ { val1:"some value 1"  },{ val2:"some value 2"  } ],
+			a4:[],
+			a5:null
+		}
+	
+	
+	
+	$(document).ready(function() {
+
+
+		$('#sel2').change( function() {
+			var $this = $(this);
+			amplify.publish( "changed", { value: $this.val() } );
+		}).keyup( function() {
+			var $this = $(this);
+			amplify.publish( "changed", { value: $this.val() } );
+		});	
+		
+
+		
+
+		amplify.subscribe( "changed", $("#MakeMeFollow"), function( data ) {
+			// save the original values
+			var originalSelected = this.selectedValues();
+			// remove all options from the select
+			this.removeOption(/./);
+			
+			
+			if (selectboxdata[data.value] && selectboxdata[data.value].length > 0 ) {
+				// add a default (empty) value
+				this.addOption("", "-- Select ("+selectboxdata[data.value].length+") --");
+				this.addOption(selectboxdata[data.value], false);
+				// try to preserve the (previously) select values
+				this.selectOptions(originalSelected, true);
+			} else {
+				this.addOption("", "-- No data found --");
+			}
+		});
+	});
+</script>
+
+
+</head>
+<body>
+<h1>Example: Linked selectboxes</h1>
+<br /><br />
+This example uses:  <list>
+						<li>Jquery</li>
+						<li>jQuery Plugin - Select  &nbsp; <a href="http://www.texotela.co.uk/code/jquery/select/">Website</a></li>
+						<li>Amplify.js  &nbsp; <a href="http://amplifyjs.com/api/pubsub/">Website</a></li>
+					</list>
+<br /><br />
+<br /><br />
+MAIN Selectbox : <select class="selectstyle" id="sel2">
+	<option value="a1">Text a1</option>
+	<option value="a2">Text a2</option>
+	<option selected="selected" value="a3">Text a3</option>
+	<option value="a4">Text a4</option>
+	<option value="a5">Text a5</option>	
+	<option value="a6">Text a6</option>	
+	<option value="a7">Text a7</option>	
+	<option value="a8">Text a8</option>	
+	<option value="a9">Text a9</option>	
+</select>
+
+
+<br /><br /><br />
+This select will be filled based on value selected in the MAIN : <select class="selectstyle" id="MakeMeFollow"></select>
+
+
+<br /><br />
+
+
+</body>
+</html>
