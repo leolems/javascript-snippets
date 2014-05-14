@@ -1,0 +1,372 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		
+	<script type="text/javascript">
+
+		// OBJECT definition
+		oTicTicToe = function () {
+			var painted = new Array();
+			var content = new Array();
+			var winningCombinations = new Array();
+			var self = this;
+			var turn;
+			var squaresFilled;
+			var gameover;
+
+
+			ttt_init();
+
+			
+			// init function
+			function ttt_init() {
+				turn = 0;
+				squaresFilled = 0;
+				gameover=false;
+				winningCombinations = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+				for(var l = 0; l <= 8; l++){
+					painted[l] = false;
+					content[l]='';
+				}
+			
+			}
+			
+			function ttt_determine_nextplayer() {
+				var x, ret = 'X', playerO=0, playerX=0;
+				for ( x=0 ; x<9; x++ ) {
+					if (painted[x]) {(content[x] === 'O') ? playerO++ : playerX++; }
+				}
+				if (playerO < playerX) { ret = 'O' } else { ret = 'X' }
+				return ret;
+			}
+			
+			
+			function ttt_getOpenSpaces() {
+				var x, open = new Array()
+				for ( x=0 ; x<9; x++ ) { if (!painted[x]) { open.push(x+1) } }
+				return open;
+			}
+
+
+			function ttt_computerClick(nr) {
+				setTimeout(function _dummy(){ self.canvasClicked(nr,true); }, 400);
+			}
+			
+			
+			/*=============================================================================================================
+					Computer Artificial Intelligence 
+							by: Leo Lems
+							
+					wiki: Artificial intelligence (AI) is the human-like intelligence exhibited by machines or software		
+			=============================================================================================================*/
+			function ttt_AI_run() {
+			
+				if (gameover) return;
+			
+			
+				var mademove=false;
+				var symbol=ttt_determine_nextplayer();
+				var computerlevel = document.getElementById("computerstrength").value;
+				if (!computerlevel) { computerlevel = "3"}
+				
+				var level = 1*computerlevel;
+				
+				if (level >= 1) {
+					mademove=ttt_AI_win(symbol);
+					if (mademove) { ttt_computerClick(mademove); return };
+				}	
+				if (level >= 2) {
+					mademove=ttt_AI_defend(symbol);
+					if (mademove) { ttt_computerClick(mademove); return };
+				}	
+		
+				if (level >= 3) {
+					mademove=ttt_AI_makeSmartMove(symbol,level);
+					if (mademove) { ttt_computerClick(mademove); return };
+				}
+				
+				// this is level 0 (random selection)
+				mademove=ttt_AI_makeAnyMove(symbol);
+				if (mademove) { ttt_computerClick(mademove); return }
+			}
+			
+			function ttt_AI_FindPossibleWins(testsymbol,rejectPainted) {
+				var a, posrows = [0,0,0,0,0,0,0,0,0]; 
+				var newobj;
+				// walk through every position on the board
+				for ( a=0 ; a<winningCombinations.length; a++ ) {
+					if( (content[winningCombinations[a][0]] == testsymbol || content[winningCombinations[a][0]] == '' ) && 
+						(content[winningCombinations[a][1]]	== testsymbol || content[winningCombinations[a][1]] == '' ) &&
+						(content[winningCombinations[a][2]]	== testsymbol || content[winningCombinations[a][2]] == '' )		) {
+						// we have found a row combination that still is viable to get a win
+						if (!(rejectPainted && painted[winningCombinations[a][0]]) ) {	posrows[winningCombinations[a][0]]++; }
+						if (!(rejectPainted && painted[winningCombinations[a][1]]) ) {	posrows[winningCombinations[a][1]]++; }
+						if (!(rejectPainted && painted[winningCombinations[a][2]]) ) {	posrows[winningCombinations[a][2]]++; }
+					}
+				}
+				return posrows;
+			}
+			
+			function ttt_AI_win(symbol) {
+				// can the computer make a move to win ?
+				var possibles = ttt_getOpenSpaces();
+				var winner = false, clone;
+				for (pos=0; pos < possibles.length; pos++ ) {
+					// clone the current array
+					clone = content.slice(0);
+					// fill in the possibility (open space)
+					clone[possibles[pos]-1] = symbol;
+					for(var a = 0; a < winningCombinations.length; a++){
+						if( clone[winningCombinations[a][0]]==  symbol && 
+							clone[winningCombinations[a][1]]==	symbol &&
+							clone[winningCombinations[a][2]]==	symbol		) {
+							winner = possibles[pos];
+							break;
+						}
+					}
+					if (winner) { break; }
+				}
+				return winner;
+			}
+			
+			function ttt_AI_defend(symbol) {
+				// must the computer make a move to prevent loss ?
+				// can the opponent make a move to win ?
+				var possibles = ttt_getOpenSpaces();
+				var defensive = false, clone;
+				var opponent_symbol = (symbol === "X") ? "O" : "X";
+
+				for (pos=0; pos < possibles.length; pos++ ) {
+					// clone the current array
+					clone = content.slice(0);
+					// fill in the possibility (open space)
+					clone[possibles[pos]-1] = opponent_symbol;
+					for(var a = 0; a < winningCombinations.length; a++){
+						if( clone[winningCombinations[a][0]]==  opponent_symbol && 
+							clone[winningCombinations[a][1]]==	opponent_symbol &&
+							clone[winningCombinations[a][2]]==	opponent_symbol		) {
+							defensive = possibles[pos];
+							break;
+						}
+					}
+					if (defensive) { break; }
+				}
+				return defensive;
+			}
+			
+			function ttt_AI_makeSmartMove(symbol,level) {
+				// Computer tries to make a smart next move ?
+				// that will make the computer win
+				// I will use some predefined moves
+				var c,op;
+				var myMoves = new Array();
+				var opponentMoves = new Array();
+				var movesToChooseFrom = new Array();
+				
+				console.log(symbol)
+				myPossibles       = ttt_AI_FindPossibleWins( symbol,true );
+				opponentPossibles = ttt_AI_FindPossibleWins( (symbol=='X')?'O':'X',true );
+				
+				/* my values */
+				//console.log(myPossibles);
+				var myMax = Math.max.apply(Math, myPossibles);
+				if (myMax===0) {
+					return false;
+				}
+
+				for (c=0;c<9;c++) { if(myPossibles[c] == myMax) {myMoves.push(c)}  }
+				if (level == 3) {
+					var nr = Math.floor(Math.random()*(myMoves.length));
+					return myMoves[nr]+1;
+				}	
+				
+				/* opponent */
+				var opponentMax = Math.max.apply(Math, opponentPossibles);
+				//&& painted[c]!==true
+				for (c=0;c<9;c++) { if(opponentPossibles[c] == opponentMax ) {opponentMoves.push(c)}  }
+					
+				/*============================================================
+					we want to use the best postion which is:
+						1) where we have the highest possibilities
+						2) where we can block the opponent the most
+				=============================================================*/
+				for (c=0; c<myMoves.length; c++) {
+					// scan all my possibilities
+					for (op=0; op<opponentMoves.length; op++) {
+						if (myMoves[c] === opponentMoves[op]) {
+							movesToChooseFrom.push(myMoves[c]);
+						}
+					}
+				}
+				var nr = Math.floor(Math.random()*(movesToChooseFrom.length));
+				//console.log(movesToChooseFrom[nr])
+				return movesToChooseFrom[nr]+1;
+			}
+			
+			function ttt_AI_makeAnyMove() {
+				// Computer makes ANY move ?
+				var x,left;
+				left = ttt_getOpenSpaces();
+				// make a random move
+				var nr = Math.floor(Math.random()*(left.length));
+				return left[nr];
+			}
+			//===========================================================================================
+
+			
+			// 1 based !!
+			function ttt_paintItem(nr) {
+				var theCanvas = document.getElementById("canvas"+nr);
+				
+				if (theCanvas) {
+					var cxt = theCanvas.getContext("2d");
+					cxt.strokeStyle = "#333";
+					cxt.lineWidth = 2;
+					
+					if(painted[nr-1]){
+						if(content[nr-1]=='X'){
+							cxt.beginPath();
+							cxt.moveTo(10,10);
+							cxt.lineTo(40,40);
+							cxt.moveTo(40,10);
+							cxt.lineTo(10,40);
+							cxt.stroke();
+							cxt.closePath();
+						}
+						else{
+							cxt.beginPath();
+							cxt.arc(25,25,20,0,Math.PI*2,true);
+							cxt.stroke();
+							cxt.closePath();
+						}
+					}	
+				}
+			}
+			
+			function ttt_markCanvas(nr,color) {
+				var theCanvas = document.getElementById("canvas"+nr);
+				if (theCanvas) {
+					var cxt = theCanvas.getContext("2d");
+					var h=parseInt(theCanvas.getAttribute("height"));
+					var w=parseInt(theCanvas.getAttribute("width"));
+
+					cxt.lineWidth = 2;
+					cxt.strokeStyle = color;
+					cxt.rect(1,1,48,48);
+					cxt.stroke();
+				}
+			}
+
+			//Game methods
+			function checkForWinners(symbol){
+				for(var a = 0; a < winningCombinations.length; a++){
+					if(content[winningCombinations[a][0]]==symbol&&content[winningCombinations[a][1]]==	symbol&&content[winningCombinations[a][2]]==symbol){
+						// mark it green
+						ttt_markCanvas(winningCombinations[a][0]+1,'#32CD32');
+						ttt_markCanvas(winningCombinations[a][1]+1,'#32CD32');
+						ttt_markCanvas(winningCombinations[a][2]+1,'#32CD32');
+						gameover=true;
+					}
+				}
+			}
+
+			/*============================================================
+					PUBLIC available functions
+			=============================================================*/
+			this.reset = function(fullreset) {
+				var c, theCanvas,cxt;
+				
+				if (fullreset) {
+					ttt_init();
+				}
+				
+				// clear the canvas
+				for (c=1;c<=9;c++) {
+					theCanvas = document.getElementById("canvas"+c);
+					cxt = theCanvas.getContext("2d");
+					cxt.clearRect(0, 0, theCanvas.width, theCanvas.height);
+				}
+			
+				// repaint
+				for (c=1;c<=9;c++) { ttt_paintItem(c); }
+			
+			}
+
+			this.canvasClicked = function(canvasNumber,byComputer){
+				var theCanvas = document.getElementById("canvas"+canvasNumber);
+				var cxt = theCanvas.getContext("2d");
+
+				if(painted[canvasNumber-1] == false){
+					painted[canvasNumber-1] = true;
+					if(turn%2==0){ 
+						content[canvasNumber-1] = 'X'; 
+					} else {
+						content[canvasNumber-1] = 'O';
+					}
+					ttt_paintItem(canvasNumber);
+
+					turn++;
+					squaresFilled++;
+					checkForWinners(content[canvasNumber-1]);
+
+					if(squaresFilled==9){
+						alert("The GAME is OVER!");
+					}
+				
+					if (!byComputer) {
+						if (document.getElementById("computer").checked) { ttt_AI_run(); }
+					}
+				}
+				else{
+					//allready taken
+				}
+			}
+		}
+		// ======================= end oTicTicToe object ===========================
+		
+		
+		
+		
+		var oTicTicToe;
+
+		//Instanciate Arrays
+		window.onload=function(){
+			oTicTicToe = new oTicTicToe();
+		}
+
+	</script>
+	</head>
+	<body>
+		<div id ="box">
+			<h1>TIC - TAC - TOE</h1>
+			<input type="checkbox" id="computer" name="computer" checked="checked">Play against computer</input>
+			<span id="cstrength">
+				<br /><br />
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Computer strength: 	<select id="computerstrength">
+										<option value="0">None</option>
+										<option value="1">Very Low</option>
+										<option selected="selected" value="2">Low</option>
+										<option value="3">Normal</option>
+										<option value="4">High</option>
+									</select>
+			</span>						
+			<br /><br /><br />
+			<canvas id = "canvas1"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(1)"></canvas>
+			<canvas id = "canvas2"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(2)"></canvas>
+			<canvas id = "canvas3"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(3)"></canvas><br/>
+			<canvas id = "canvas4"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(4)"></canvas>
+			<canvas id = "canvas5"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(5)"></canvas>
+			<canvas id = "canvas6"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(6)"></canvas><br/>
+			<canvas id = "canvas7"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(7)"></canvas>
+			<canvas id = "canvas8"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(8)"></canvas>
+			<canvas id = "canvas9"  width="50" height="50" style="border:1px solid black" onclick="oTicTicToe.canvasClicked(9)"></canvas>
+			<br /><br />
+			<button id="gamereset" onclick="oTicTicToe.reset(true);">Start new game</button>
+		</div>
+		<br /><br /><br />
+		<a href="http://www.dreamincode.net/forums/topic/247361-simple-tic-tac-toe-using-html5-css3-and-javascript/">Original source code</a><br /><br />
+		AI and code improvements made by Leo Lems
+	</body>
+</html>
+
+
