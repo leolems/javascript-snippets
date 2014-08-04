@@ -25,7 +25,7 @@
 // Here comes the magical function that will power your web-application
 (function(){
 
-	this.xtpl_add = function xtpl_add(templatestring, data){
+	this.xtpl = function xtpl(templatestring, data){
 		//======================================================================
 		//==-- 2basix version  (improved code..)	
 		//======================================================================
@@ -104,8 +104,8 @@ var newdata= {
 				
 			
 // generate our rendering function !!!
-var Tfunc = xtpl_add(thetemplate);
-var tpl2 = xtpl_add(xtplTemplate2);
+var Tfunc = xtpl(thetemplate);
+var tpl2 = xtpl(xtplTemplate2);
 
 // generate the html using our Tfunc
 for (i = 0; i < data2.length; i++ ) {
