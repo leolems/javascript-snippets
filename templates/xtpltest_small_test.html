@@ -14,11 +14,62 @@
 
 <script type="text/javascript">
 
+
+
+
 /*----------------------------------------------------------
 //   Micro JavaScript Templating   xtpl (minified version)
-//   Leo Lems - http://2basix.nl - MIT Licensed
+//   Leo Lems - http://2basix.nl 
+// 		original code by John Resig - MIT Licensed
 ------------------------------------------------------------*/
-(function(){this.xtpl=function xtpl(templatestring,data){var ret='',xfn=new Function("o","var arr=['"+templatestring.replace(/[\r\t\n]/g,"").split("'").join("\\'").replace(/{%=\s*\(\s*(.+?)\s*\)\s*%}/g,"',($1),'").replace(/{%=\s*(.+?)\s*%}/g,"',(o.$1)?o.$1:'','")+"']; return arr.join('');");if(!data){return xfn}return xfn(data)}})();
+// Here comes the magical function that will power your web-application
+(function(){
+
+	this.xtpl = function xtpl(templatestring, data){
+		//======================================================================
+		//==-- 2basix version  (improved code..)	
+		//======================================================================
+		var ret='', err='';
+		
+			// Generate a reusable function that will serve as a template generator.
+		try{ 
+				var rdata = /{%=\s*(.+?)\s*%}/g, 
+					rfunc = /{%=\s*\(\s*(.+?)\s*\)\s*%}/g,
+					pre_tpl =	"var arr=[]; arr.push('"+
+								templatestring	.replace(/[\r\t\v\n\b]/g, "")
+												.split("'").join("\\'")
+												.split("{%js").join("');")
+												.split("js%}").join("; arr.push('")
+								+"'); return arr.join('');",
+											
+					xfn =   // Generate a reusable function that will serve as a template generator.
+							new Function("xtplData", 
+									pre_tpl.replace(rfunc, "',(xtplData.$1),'")		// take care off functions
+										   .replace(rdata, "',(xtplData.$1)?xtplData.$1:'','")
+							);
+//					console.log(pre_tpl.replace(rfunc, "',(xtplData.$1),'")		// take care off functions
+//										   .replace(rdata, "',(xtplData.$1)?xtplData.$1:'','"))		
+							
+		} catch(err) { 
+				txt="xtpl: There is an error inside the template string\n\n";
+				txt+="Click OK to continue.\n\n";
+				alert(txt); 
+				return '';
+		}
+		if (!data) { return xfn }	// return the function !!!
+
+		//=================================================
+		try{ ret=xfn(data); } catch(err) { 
+				txt="xtpl: Error occured when generating the HTML from the template \n\n";
+				txt+="Click OK to continue.\n\n";
+				alert(txt); 
+				return '';
+		}
+ 		return ret;
+	};
+})();
+
+
 
 
 /*=============================================================================
@@ -26,24 +77,37 @@
 -------------------------------------------------------------------------------
 {%=id%}		regular tag, that will be replaced by the data (if present)
 {%=text%}	again a data element
-{%= ( i % 2 == 1 ? \"even\" : \"\" ) %}
-			This is some JS that will be executed, in this case i comes from
-			a level above, and will set a class
+{%js ( id % 2 == 1 ? \"even\" : \"\" ) js%}
 			
-			NOTICE it uses the i variable !!!
+{%js  ..  js%}	Any plain piece of javascript that will be inserted
 ==============================================================================*/
+var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}\">{%=text%}</div>";
 
-var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( i % 2 == 1 ? \"even\" : \"\" ) %}\">{%=text%}</div>";
+var xtplTemplate2 = '<div><h1 class="header">{%=header%}</h1><h2 class="header2">{%=header2%}</h2><h3 class="header3">{%=header3%}</h3><h4 class="header4">{%=header4%}</h4><h5 class="header5">{%=header5%}</h5>{%=xxxx%}<h6 class="header6">{%=header6%}</h6><ul class="list">{%js var i=0, alen=xtplData.list.length; for ( i=0; i < alen; i++ ) { js%} <li class="item">{%=list[i]%}</li> {%js } js%}</ul></div>';
+
+
 var html="";	
 // some json test data (4 records)
 var data2= [ 	{id:"1", text:"John says... Hello you JS devs.. "},
 				{id:"2", text:"this is a second line"},
 				{id:"3", text:"the third line"},
 				{id:"4", text:"The finishing line"}  ];
+
+var newdata= {
+           header: "Header",
+           header2: "Header2",
+           header3: "Header3",
+           header4: "Header4",
+           header5: "Header5",
+           header6: "Header6",
+           list: ['10000000', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+          };
 				
 				
+			
 // generate our rendering function !!!
 var Tfunc = xtpl(thetemplate);
+var tpl2 = xtpl(xtplTemplate2);
 
 // generate the html using our Tfunc
 for (i = 0; i < data2.length; i++ ) {
@@ -51,7 +115,11 @@ for (i = 0; i < data2.length; i++ ) {
 }
 
 // output the html
-$('#thumbs').html(html);
+$('#thumbs').html(html+'<br /><br />'+tpl2(newdata));
+
+
+
+
 </script>
 
 </body>
