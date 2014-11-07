@@ -86,13 +86,10 @@
 			if ($tabs.parent().hasClass('tab-container')) {
 				return false
 			}
-
 			// store it for later use to handle other items
 			$newTabs.push($tabs);
-			
 			// put on the wrapper !
 			$tabs.wrap('<div class="tab-container"></div>');
-		
 			var $container = $tabs.parent();
 			$list = $container.children('ul:first');
 			if ($list.length === 0) {
@@ -111,7 +108,6 @@
 		// handle the rest off the actions needed to activate the tabs
 		$.each($newTabs, function() {
 			$newtab = $(this);
-			
 			// make all tab content divs hidden
 			$newtab.find('.tab-content').hide();
 			// make first tab visible (active)
@@ -130,10 +126,6 @@
 		});
 	};	
 
-
-$(document).ready(function() {
-
-});
 </script>
 
 
