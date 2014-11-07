@@ -15,10 +15,8 @@
 <script type="text/javascript">
 
 
-
-
 /*----------------------------------------------------------
-//   Micro JavaScript Templating   xtpl (minified version)
+//   Micro JavaScript Templating   
 //   Leo Lems - http://2basix.nl 
 // 		original code by John Resig - MIT Licensed
 ------------------------------------------------------------*/
@@ -29,7 +27,7 @@
 		//======================================================================
 		//==-- 2basix version  (improved code..)	
 		//======================================================================
-		var ret='', err='';
+		var ret='', err='', txt='';
 		
 			// Generate a reusable function that will serve as a template generator.
 		try{ 
@@ -42,32 +40,28 @@
 												.split("js%}").join("; p+='")
 								+"'; return p;";
 								
-					xfn =   // Generate a reusable function that will serve as a template generator.
+				var	xfn =   // Generate a reusable function that will serve as a template generator.
 							new Function("xtplData", 
 									pre_tpl.replace(rfunc, "'; p+=(xtplData.$1); p+='")		// take care off functions
 										   .replace(rdata, "'; p+=((xtplData.$1)?xtplData.$1:''); p+='")
 							);
-							
+						
 		} catch(err) { 
-				txt="xtpl: There is an error inside the template string\n\n";
-				txt+="Click OK to continue.\n\n";
-				alert(txt); 
+				txt="xtpl: There is an error inside the template string.";
+				if(window.console && window.console.log) { console.log(txt); console.log("Template: "+templatestring); }
 				return '';
 		}
 		if (!data) { return xfn }	// return the function !!!
 
 		//=================================================
 		try{ ret=xfn(data); } catch(err) { 
-				txt="xtpl: Error occured when generating the HTML from the template \n\n";
-				txt+="Click OK to continue.\n\n";
-				alert(txt); 
+				txt="xtpl: Error occured when generating the HTML from the template.";
+				if(window.console && window.console.log) { console.log(txt); console.log("Template: "+templatestring); }
 				return '';
 		}
  		return ret;
 	};
 })();
-
-
 
 
 /*=============================================================================
@@ -79,9 +73,6 @@
 			
 {%js  ..  js%}	Any plain piece of javascript that will be inserted
 ==============================================================================*/
-var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}\">{%=text%}</div>";
-
-var xtplTemplate2 = '<div><h1 class="header">{%=header%}</h1><h2 class="header2">{%=header2%}</h2><h3 class="header3">{%=header3%}</h3><h4 class="header4">{%=header4%}</h4><h5 class="header5">{%=header5%}</h5>{%=xxxx%}<h6 class="header6">{%=header6%}</h6><ul class="list">{%js var i=0, alen=xtplData.list.length; for ( i=0; i < alen; i++ ) { js%} <li class="item">{%=list[i]%}</li> {%js } js%}</ul></div>';
 
 
 var html="";	
@@ -91,6 +82,7 @@ var data2= [ 	{id:"1", text:"John says... Hello you JS devs.. "},
 				{id:"3", text:"the third line"},
 				{id:"4", text:"The finishing line"}  ];
 
+// json test data for second test
 var newdata= {
            header: "Header",
            header2: "Header2",
@@ -102,18 +94,29 @@ var newdata= {
           };
 				
 				
-			
-// generate our rendering function !!!
-var Tfunc = xtpl(thetemplate);
-var tpl2 = xtpl(xtplTemplate2);
+//==================================================================
+// example processing data2 (simple list)
+//==================================================================
+	var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}\">{%=text%}</div>";
 
-// generate the html using our Tfunc
-for (i = 0; i < data2.length; i++ ) {
-	html += Tfunc( data2[i] );
-}
+	// generate our rendering function !!!
+	var Tfunc = xtpl(thetemplate);
+	// generate the html using our Tfunc
+	for (i = 0; i < data2.length; i++ ) {
+		html += Tfunc( data2[i] );
+	}
+	// output the html
+	$('#thumbs').html(html+'<br /><br />');
 
-// output the html
-$('#thumbs').html(html+'<br /><br />'+tpl2(newdata));
+	
+//====================================================================================
+// example processing newdata (advanced version including a list)
+//		remark: note the nonExisting tag that will be replaced by an empty string
+//====================================================================================
+	var xtplTemplate2 = '<div>{%=nonExisting%}<h1 class="header">{%=header%}</h1><h2 class="header2">{%=header2%}</h2><h3 class="header3">{%=header3%}</h3><h4 class="header4">{%=header4%}</h4><h5 class="header5">{%=header5%}</h5><h6 class="header6">{%=header6%}</h6><ul class="list">{%js var i=0, alen=xtplData.list.length; for ( i=0; i < alen; i++ ) { js%} <li class="item">{%=list[i]%}</li> {%js } js%}</ul></div>';
+
+	// generate and output the html directly (in 1 call)
+	$('#thumbs').append( xtpl(xtplTemplate2,newdata) );
 
 
 
