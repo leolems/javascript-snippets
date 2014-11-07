@@ -75,9 +75,24 @@
 	};	
 	
 	function tabify() {
+		var $tabs;
+		var $newTabs=[];
+
 		//create tabs and tab structure
-		$('.tabs').wrap('<div class="tab-container"></div>').each( function () {
+		$('.tabs').each( function () {
 			var $tabs = $(this);
+		
+			// check if allready tab-ified
+			if ($tabs.parent().hasClass('tab-container')) {
+				return false
+			}
+
+			// store it for later use to handle other items
+			$newTabs.push($tabs);
+			
+			// put on the wrapper !
+			$tabs.wrap('<div class="tab-container"></div>');
+		
 			var $container = $tabs.parent();
 			$list = $container.children('ul:first');
 			if ($list.length === 0) {
@@ -92,21 +107,26 @@
 				$tab.attr('id',newid).attr('title','');		// set new id anr remove the title
 			})
 		});
-		// make all tab content divs hidden
-		$('.tab-content').hide();
 		
-		// make first tab visible (active)
-		$('.tabs').each( function() {  $(this).children('.tab-content:first').show();   })   
-		$('.tab-container ul.tabs-menu').each( function() { $(this).children('li:first').addClass("current");  } )  
-		
-		// activate the TAB logic
-		$(".tabs-menu a").click(function(event) {
-			event.preventDefault();
-			$(this).parent().siblings().removeClass("current");
-			$(this).parent().addClass("current");
-			var tab = "#"+$(this).attr("id").substring(2);
-			$(tab).parent().children('.tab-content').hide();
-			$(tab).show();
+		// handle the rest off the actions needed to activate the tabs
+		$.each($newTabs, function() {
+			$newtab = $(this);
+			
+			// make all tab content divs hidden
+			$newtab.find('.tab-content').hide();
+			// make first tab visible (active)
+			$newtab.children('.tab-content:first').show();
+			$newtab.parent().children('ul.tabs-menu').each( function() { 
+				$(this).children('li:first').addClass("current");  
+				$(this).find('li a').click(function(event) {
+					event.preventDefault();
+					$(this).parent().siblings().removeClass("current");
+					$(this).parent().addClass("current");
+					var tab = "#"+$(this).attr("id").substring(2);
+					$(tab).parent().children('.tab-content').hide();
+					$(tab).show();
+				});
+			});
 		});
 	};	
 
