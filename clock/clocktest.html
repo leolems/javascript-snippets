@@ -1,0 +1,201 @@
+<html>
+<head>
+<!--		
+		References and interesting urls
+		
+			http://www.dafont.com/theme.php?cat=302
+			http://momentjs.com/ 
+ 
+			time parts (NTP):
+				http://json-time.appspot.com/
+				http://james.padolsey.com/javascript/getting-the-real-time-in-javascript/
+				http://stackoverflow.com/questions/10900907/good-precision-for-sync-time-with-ntp-over-javascript
+		
+-->
+
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script> 
+<style type="text/css">
+
+@font-face {
+    font-family: "alarmClock";
+    src: url(alarmClock.ttf) format("truetype");
+}
+.customfont { 
+    font-family: "alarmClock", Verdana, Tahoma;
+	font-size: 57px!important;
+}
+
+.centered {
+    margin: 0 auto;
+    max-width: 940px;
+}
+
+.clock-analog {
+    background: none repeat scroll 0 50% #00f;
+    border: 8px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 8px rgba(34, 34, 34, 0.3), 0 1px 8px rgba(34, 34, 34, 0.3) inset;
+    height: 180px;
+    margin: 0 auto;
+    position: relative;
+    width: 180px;
+}
+.clock-a-hour {
+    background: none repeat scroll 0 0 #fff;
+    border-radius: 3px 0 0 3px;
+    height: 0;
+    left: 50%;
+    margin: -4px 0 -4px -25%;
+    padding: 4px 0 4px 25%;
+    position: absolute;
+    top: 50%;
+    transform-origin: 100% 50% 0;
+    width: 0;
+}
+.clock-a-minute {
+    background: none repeat scroll 0 0 #fff;
+    border-radius: 2px 2px 0 0;
+    height: 0;
+    left: 50%;
+    margin: -40% -3px 0;
+    padding: 40% 3px 0;
+    position: absolute;
+    top: 50%;
+    transform-origin: 50% 100% 0;
+    width: 0;
+	z-index:2;
+}
+.clock-a-second {
+    background: none repeat scroll 0 0 #f00;
+    height: 0;
+    left: 50%;
+    margin: -40% -1px 0 0;
+    padding: 40% 1px 0;
+    position: absolute;
+    top: 50%;
+    transform-origin: 50% 100% 0;
+    width: 0;
+	z-index:3;
+}
+.clock-face {
+    height: 100%;
+    width: 100%;
+}
+.clock-face:after {
+    background: none repeat scroll 0 0 #f00;
+    border-radius: 6px;
+    content: "";
+    display: block;
+    height: 12px;
+    left: 50%;
+    margin: -6px 0 0 -6px;
+    position: absolute;
+    top: 50%;
+    width: 12px;
+	z-index:3;
+}
+
+.clock-digital {
+	
+	border: 7px solid #ddd;
+    background-color: #000;
+    color: #f00;
+    font-size: 69px;
+}
+
+</style>
+
+<script type="text/javascript">
+ 
+ if (typeof _clock !== "object") {
+	var _clock = {};
+}
+
+(function($,_clock) {
+	var _internal = {	timerrunning: false,
+						analog: 	{	second: 0, 				// degrees
+										minute: 0, 				// degrees
+										hour : 	0},
+						digital:	{	second: "00", 			// text
+										minute: "00", 			// text
+										hour : 	"00"	},
+					};
+
+
+	var pad = function(x) {
+		return x < 10 ? '0'+x : x;
+	};
+
+	var outputClock = function() {
+		$('.clock-a-hour').css("transform", "rotate(" + _internal.analog.hour  + "deg)");
+        $('.clock-a-minute').css("transform", "rotate(" + _internal.analog.minute + "deg)");
+        $('.clock-a-second').css("transform", "rotate(" + _internal.analog.second + "deg)");
+		$('.clock-d-hour').html(_internal.digital.hour);
+		$('.clock-d-minute').html(":"+_internal.digital.minute);
+		$('.clock-d-second').html(":"+_internal.digital.second);
+		var o =$('.clock-digital');
+		var w=o.outerWidth()+1;
+		o.parents('div:first').css({width : w});
+	};
+	
+    var updateClock = function()	{
+        var now = new Date, tminupd, thrupd;
+		tminupd = now.getSeconds() % 10;
+		thrupd = now.getMinutes() % 10;
+	
+		_internal.analog.second 	= now.getSeconds() * 6;
+		if (tminupd === 0 || !_internal.timerrunning) {
+			_internal.analog.minute 	= Math.round(now.getMinutes() * 6 + _internal.analog.second / 60);
+		}
+		if (thrupd === 0 || !_internal.timerrunning) {
+			_internal.analog.hour 		=  Math.round(((now.getHours() % 12) / 12) * 360 + 90 + _internal.analog.minute / 12);
+		}
+		
+		_internal.digital.hour		= pad(now.getHours());
+		_internal.digital.minute	= pad(now.getMinutes());
+		_internal.digital.second	= pad(now.getSeconds());
+    };
+	
+    var timedUpdate = function() {
+        updateClock();
+		outputClock();
+        setTimeout(timedUpdate, 1000);
+		_internal.timerrunning = true;
+    };
+
+	_clock.startClock = function() {
+		if (!_internal.timerrunning) { timedUpdate(); }
+	};
+})( jQuery,_clock );	
+
+
+	
+$(document).ready(function() {
+	_clock.startClock();
+});
+
+// test resize:   $('#myanalogclock').css({height : "75px", width: "75px"}) 
+
+</script>
+
+
+</head>
+<body>
+<br /><br /><h1>Clock made with CSS and JS</h1>
+<br />
+<div id="myanalogclock" class="clock-analog">
+	<div class="clock-face">
+		<div class="clock-a-hour" style="transform: rotate(437deg);"></div>
+		<div class="clock-a-minute" style="transform: rotate(213deg);"></div>
+		<div class="clock-a-second" style="transform: rotate(180deg);"></div>
+	</div>
+</div>
+<br /><br /><br />
+<div class="centered" style="padding:5px;">
+	<span class="clock-digital customfont">
+		<span class="clock-d-hour">88</span><span class="clock-d-minute">:88</span><span class="clock-d-second">:88</span>
+	</span>
+</div>	
+
+</body>
+</html>
