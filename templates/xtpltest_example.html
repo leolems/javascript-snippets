@@ -14,11 +14,37 @@
 
 <script type="text/javascript">
 
+//	split a string using an array (to split up by using multiple arguments)
+if(!String.prototype.arrsplit) {
+	String.prototype.arrsplit = function (arr) {
+		var i,e,len,lene,tmp,res = [], tempres=[];
+		res[0] = this;
+		if (arr && !(arr.propertyIsEnumerable('length')) && typeof arr === 'object' && typeof arr.length === 'number') {
+			len = arr.length;
+		} else {
+			len=1;
+		}
+		for (i=0; i<len; i++) {
+			// walk through all split items in the array
+			tempres = [];
+			lene=res.length;
+			for (e=0;e<lene;e++){
+				// split all elements inside res
+				tmp = res[e].split(arr[i]);
+				tempres = tempres.concat(tmp);
+			}
+			res=tempres;
+		}
+		return res;
+	};
+}
+
+
 
 /*----------------------------------------------------------
 //   Micro JavaScript Templating   
-//   Leo Lems - http://2basix.nl 
 // 		original code by John Resig - MIT Licensed
+//		reworked by Leo Lems - http://2basix.nl 
 ------------------------------------------------------------*/
 // Here comes the magical function that will power your web-application
 (function(){
@@ -29,15 +55,39 @@
 		//======================================================================
 		var ret='', err='', txt='';
 		
-			// Generate a reusable function that will serve as a template generator.
+		// Generate a reusable function that will serve as a template generator.
 		try{ 
 				var rdata = /{%=\s*(.+?)\s*%}/g, 
 					rfunc = /{%=\s*\(\s*(.+?)\s*\)\s*%}/g,
-					pre_tpl =	"var p='"+
-								templatestring	.replace(/[\r\t\v\n\b]/g, "")
-												.split("'").join("\\'")
-												.split("{%js").join("';")
-												.split("js%}").join("; p+='")
+					tmpprocess = templatestring.replace(/[\r\t\v\n\b]/g, "");
+
+				// pre process the {if} to regular JS labels
+				if (templatestring.search("{%if}") > -1) {
+					tmpprocess = tmpprocess.split("{%if}").join("{%js if(").split("{if%}").join("){ js%}").split("{%endif%}").join("{%js } js%}").split('{%else%}').join("{%js } else { js%}");
+				}
+
+				if (tmpprocess.search("{%js") > -1) {
+					tmpprocess = tmpprocess.arrsplit(["{%js","js%}"]);
+
+					// process the JS parts, also resolve all {%= %} labels inside the JS
+					var xx, thelen;
+					thelen = tmpprocess.length;
+					for (xx=0;xx<thelen;xx++) {
+						// these are the JS parts...., map the labels inside to real JS data items
+						// % 2 items are always JS items !!!! (tests proved this)
+						if (xx % 2) { 
+							tmpprocess[xx] = "{%js" + tmpprocess[xx].replace(rdata, "xtplData.$1") + "js%}"; 	
+						} else {
+							// these are just html template parts with LABELS in them
+						}
+					}
+					tmpprocess = tmpprocess.join('');		
+				}
+				
+				
+				var	pre_tpl =	"var p='"+tmpprocess.split("'").join("\\'")
+													.split("{%js").join("';")
+													.split("js%}").join("; p+='")
 								+"'; return p;";
 								
 				var	xfn =   // Generate a reusable function that will serve as a template generator.
@@ -45,7 +95,6 @@
 									pre_tpl.replace(rfunc, "'; p+=(xtplData.$1); p+='")		// take care off functions
 										   .replace(rdata, "'; p+=((xtplData.$1)?xtplData.$1:''); p+='")
 							);
-						
 		} catch(err) { 
 				txt="xtpl: There is an error inside the template string.";
 				if(window.console && window.console.log) { console.log(txt); console.log("Template: "+templatestring); }
@@ -69,10 +118,23 @@
 -------------------------------------------------------------------------------
 {%=id%}		regular tag, that will be replaced by the data (if present)
 {%=text%}	again a data element
-{%js ( id % 2 == 1 ? \"even\" : \"\" ) js%}
+{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}
+			This is some JS that will be evauluated, in this case i comes from
+			a level above, and will set a class
+			
+			NOTICE it uses the i variable !!!
+			
+			
+JAVASCRIPT tags			
 			
 {%js  ..  js%}	Any plain piece of javascript that will be inserted
+
+{%if}  {if%}  	
+{%else%}		
+{%endif%}
 ==============================================================================*/
+
+
 
 
 var html="";	
@@ -82,22 +144,14 @@ var data2= [ 	{id:"1", text:"John says... Hello you JS devs.. "},
 				{id:"3", text:"the third line"},
 				{id:"4", text:"The finishing line"}  ];
 
-// json test data for second test
-var newdata= {
-           header: "Header",
-           header2: "Header2",
-           header3: "Header3",
-           header4: "Header4",
-           header5: "Header5",
-           header6: "Header6",
-           list: ['10000000', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-          };
-				
-				
 //==================================================================
 // example processing data2 (simple list)
+// But we have a JS example in here	:)
 //==================================================================
-	var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}\">{%=text%}</div>";
+
+	//var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}\"> {%=id%} - {%=text%}</div>";
+	var thetemplate = "<div id=\"{%=id%}\" class=\"{%= ( id % 2 == 1 ? \"even\" : \"\" ) %}\">{%if}{%=id%}!=\"2\"{if%} {%=id%} - xx{%else%}  {%=text%} {%endif%}</div>";
+	var Xfunc = xtpl(thetemplate);
 
 	// generate our rendering function !!!
 	var Tfunc = xtpl(thetemplate);
@@ -108,16 +162,29 @@ var newdata= {
 	// output the html
 	$('#thumbs').html(html+'<br /><br />');
 
+
+	
 	
 //====================================================================================
 // example processing newdata (advanced version including a list)
 //		remark: note the nonExisting tag that will be replaced by an empty string
 //====================================================================================
-	var xtplTemplate2 = '<div>{%=nonExisting%}<h1 class="header">{%=header%}</h1><h2 class="header2">{%=header2%}</h2><h3 class="header3">{%=header3%}</h3><h4 class="header4">{%=header4%}</h4><h5 class="header5">{%=header5%}</h5><h6 class="header6">{%=header6%}</h6><ul class="list">{%js var i=0, alen=xtplData.list.length; for ( i=0; i < alen; i++ ) { js%} <li class="item">{%=list[i]%}</li> {%js } js%}</ul></div>';
+// json test data for second test
+	var newdata= {
+           header: "Header",
+           header2: "Header2",
+           header3: "Header3",
+           header4: "Header4",
+           header5: "Header5",
+           header6: "Header6",
+           list: ['10000000', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+		};
+
+
+	var xtplTemplate2 = '<div>nonexisting data results in an empty string:&gt;{%=nonExisting%}&lt;<h1 class="header">{%=header%}</h1><h2 class="header2">{%=header2%}</h2><h3 class="header3">{%=header3%}</h3><h4 class="header4">{%=header4%}</h4><h5 class="header5">{%=header5%}</h5><h6 class="header6">{%=header6%}</h6><ul class="list">{%js var i=0, alen=xtplData.list.length; for ( i=0; i < alen; i++ ) { js%} <li class="item">{%=list[i]%}</li> {%js } js%}</ul></div>';
 
 	// generate and output the html directly (in 1 call)
 	$('#thumbs').append( xtpl(xtplTemplate2,newdata) );
-
 
 
 
