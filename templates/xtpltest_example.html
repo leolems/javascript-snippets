@@ -47,9 +47,10 @@ if(!String.prototype.arrsplit) {
 //		reworked by Leo Lems - http://2basix.nl 
 ------------------------------------------------------------*/
 // Here comes the magical function that will power your web-application
+
 (function(){
 
-	this.xtpl = function xtpl(templatestring, data){
+	this.xtpl = function xtpl(templatestring, data, options){
 		//======================================================================
 		//==-- 2basix version  (improved code..)	
 		//======================================================================
@@ -87,13 +88,13 @@ if(!String.prototype.arrsplit) {
 				
 				var	pre_tpl =	"var p='"+tmpprocess.split("'").join("\\'")
 													.split("{%js").join("';")
-													.split("js%}").join("; p+='")
+													.split("js%}").join("p+='")
 								+"'; return p;";
 								
-				var	xfn =   // Generate a reusable function that will serve as a template generator.
+				var xfn =   // Generate a reusable function that will serve as a template generator.
 							new Function("xtplData", 
-									pre_tpl.replace(rfunc, "'; p+=(xtplData.$1); p+='")		// take care off functions
-										   .replace(rdata, "'; p+=((xtplData.$1)?xtplData.$1:''); p+='")
+									pre_tpl.replace(rfunc, "'+(xtplData.$1)+'")								// take care off functions
+										   .replace(rdata, "'+((xtplData.$1)?xtplData.$1:'')+'")
 							);
 		} catch(err) { 
 				txt="xtpl: There is an error inside the template string.";
