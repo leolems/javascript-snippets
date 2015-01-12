@@ -5,7 +5,7 @@
 //				reworked by Author: Leo Lems - http://2basix.nl 
 //
 // 		xtpl += version 
-//			size: 1364 bytes of code
+//			size: 1345 bytes of code
 ---------------------------------------------------------------------------*/
 //	split a string using an array (to split up by using multiple arguments)
 String.prototype.arrsplit||(String.prototype.arrsplit=function(t){var e,o,r,n,l,s=[],i=[]
