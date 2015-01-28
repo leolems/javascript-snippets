@@ -7,6 +7,6 @@ A FAST and powerfull templating engine
 - Error handling
 - Fast 
 
-see: http://jsperf.com/dom-vs-innerhtml-based-templating/970
+see: http://jsperf.com/dom-vs-innerhtml-based-templating/1014
 
 
