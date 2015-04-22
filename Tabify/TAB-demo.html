@@ -9,6 +9,44 @@
 	font-size: 14px;        
 	}
 
+	button 	{ margin-left:20px; }
+	.mt10	{ margin-top: 10px; }
+	.mb10	{ margin-bottom: 10px; }
+	.ml10	{ margin-left: 10px;}
+	.ml20	{ margin-left: 20px;}
+	.ml30	{ margin-left: 30px;}
+	.ml40	{ margin-left: 40px;}
+	.cmd	{ margin-left: 30px; font-size:0.8em }
+	
+
+	.Ttable{
+		width:100%; 
+		border-collapse:collapse; 
+	}
+	.Ttable td{ 
+		padding:5px;
+	}
+
+	.Ttable td:first-child { width: 300px; }
+	
+	/* provide some minimal visual accomodation for IE8 and below */
+	.Ttable tr{
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the ODD background rows  */
+	.Ttable tr:nth-child(odd){ 
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the EVEN background rows  */
+	.Ttable tr:nth-child(even){
+		background: #dae5f4;
+	}
+
+
+	
+	
+	
+/* =================== TABS =================== */	
 	.tab-container {
 		display: inline-block;
 		width:100%;
@@ -16,65 +54,112 @@
 
 	.tabs-menu {
 		height: 30px;
-		float: left;
 		clear: both;
 		list-style: outside none none;
 		margin-bottom: 0px;
-		padding-left: 10px;
+		padding-left: 0px;
+		border-bottom: 2px solid #ddd;
 	}
 
+
+/*		border-top: 1px solid #d4d4d1;
+		border-right: 1px solid #d4d4d1;
+		border-left: 1px solid #d4d4d1;
+*/
 	.tabs-menu li {
 		height: 30px;
 		line-height: 30px;
 		float: left;
 		margin-right: 5px;
 		background-color: #ccc;
-		border-top: 1px solid #d4d4d1;
-		border-right: 1px solid #d4d4d1;
-		border-left: 1px solid #d4d4d1;
+		border: 1px solid #d4d4d1;
+		padding-left: 10px;
+
+		-webkit-border-top-left-radius: 6px;
+		-moz-border-radius-topleft: 6px;
+		border-top-left-radius: 6px;
+
+		-webkit-border-top-right-radius: 6px;
+		-moz-border-radius-topright: 6px;
+		border-top-right-radius: 6px;
 	}
 
+
+	
+/* 		border-bottom: 1px solid #fff; */
+	
 	.tabs-menu li.current {
 		position: relative;
-		background-color: #fff;
-		border-bottom: 1px solid #fff;
+		background-color: #f8f8f8;
+		border-bottom: 1px solid #f8f8f8;
 		z-index: 5;
 	}
 
+	.tabs-menu li.disabled, 
+	.tabs-menu li:disabled
+	{
+		position: relative;
+		background-color: #ddd;
+		border-bottom: 1px solid #eee;
+		z-index: 5;
+		cursor:default;
+	}
+
+/* 		text-transform: uppercase; */	
 	.tabs-menu li a {
-		padding: 10px;
-		text-transform: uppercase;
-		color: #fff;
+		padding: 10px 10px 10px 0px;
+		color: #333;
 		text-decoration: none; 
 	}
 
-	.tabs-menu .current a {
+	.tabs-menu li.current a {
 		color: #2e7da3;
 	}
 
+	.tabs-menu li.disabled  a
+	{
+		color: #aaa;
+		cursor:default;
+	}
+
+/* 		border-top: 1px solid #d4d4d1; */
+ 	
 	.tabs {
-		border: 1px solid #d4d4d1;
-		background-color: #fff;
+		border-left: 1px solid #d4d4d1;
+		background-color: #f8f8f8;
 		margin-bottom: 20px;
-		width: auto;
+		padding: 10px;
+		width: 100%;
 		clear: both;
 	}
 
 	.tab-content {
-		padding: 10px;
-		
+		display: inline-block;
+		width: inherit;
 	}
 </style>
 
 <script type="text/javascript">
 
-	function myRandomString(neverused) {
+	var _tabs = {};
+
+	
+	_tabs.myRandomString = function(neverused) {
 		var d=new Date(), uniqueid=d.getTime().toString(36), tstring="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ00",
 		ret=tstring.substr(Math.floor((Math.random() * 62)),1) + tstring.substr(Math.floor((Math.random() * 62)),1) + uniqueid + tstring.substr(Math.floor((Math.random() * 62)),1);
 		return (ret);
 	};	
 	
-	function tabify() {
+	_tabs.makeArray = function(element) {
+		var result = [];
+		if ($.isArray(element)) { result = element; } else { result[0] = element;  }
+		return result;
+	};
+	
+	/*=====================================================================================================
+	==--						Tabify a container
+	======================================================================================================*/
+	_tabs.tabify = function() {
 		var $tabs;
 		var $newTabs=[];
 
@@ -98,7 +183,7 @@
 			}	
 			$tabs.children('.tab-content').each( function(){
 				var $tab = $(this);
-				var newid = myRandomString();
+				var newid = _tabs.myRandomString();
 				var theTitle = $tab.attr('title');
 				$list.append('<li><a href="#" id="a-'+newid+'" title="'+theTitle+'">'+theTitle+'</a></li>');
 				$tab.attr('id',newid).attr('title','');		// set new id anr remove the title
@@ -116,26 +201,173 @@
 				$(this).children('li:first').addClass("current");  
 				$(this).find('li a').click(function(event) {
 					event.preventDefault();
-					$(this).parent().siblings().removeClass("current");
-					$(this).parent().addClass("current");
-					var tab = "#"+$(this).attr("id").substring(2);
-					$(tab).parent().children('.tab-content').hide();
-					$(tab).show();
+					var _t = $(this).parent();
+					if (	!(	_t.hasClass("disabled") || 
+								_t.is('[disabled]')			))	{
+						_tabs.activateTab(_t);		
+					}	
 				});
 			});
 		});
 	};	
 
+
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.getTabObject = function($tab) {
+		if ($tab instanceof jQuery) { return $tab;	}
+		if ($.isArray($tab) && typeof $tab[0] === "string") {
+			// array of tabnames
+			var arr=[];
+			$tab.forEach(function(elem,index,array){
+				arr.push($('.tabs-menu a[title="'+elem+'"]').parent());
+			});
+			return arr;
+		}
+		if (typeof $tab === "string") {
+			return $('.tabs-menu a[title="'+$tab+'"]').parent()
+		}
+		return $();															// empty jquery object !!
+	}
+	
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.activateFirstTab = function($tab) {
+		$tab = _tabs.getTabObject($tab);
+		var ft = $tab.siblings().not('.disabled').first();
+		return _tabs.activateTab(ft);
+	}
+	
+
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.activatePrevTab = function($tab) {
+		$tab = _tabs.getTabObject($tab);
+		if ($tab instanceof jQuery) {
+			var tab = $tab.prevAll().not('.disabled').first();
+			if (tab.length !== 0) {
+				return _tabs.activateTab(tab);
+			}
+		}	
+		return false;
+	}
+
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.activateNextTab = function($tab) {
+		$tab = _tabs.getTabObject($tab);
+		var tab = $tab.nextAll().not('.disabled').first();
+		if (tab.length !== 0) {
+			return _tabs.activateTab(tab);
+		}
+		return false;
+	}
+	
+	
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.activateTab = function($tab) {
+		$tab = _tabs.getTabObject($tab);
+		if ($tab.length > 0) {
+			if ($tab.hasClass("disabled")) {
+				// we cannot activate it because its disabled !!!!
+				// we will TRY to activate the previous enabled tab instead
+				return _tabs.activatePrevTab($tab);
+			}
+			var $link = $tab.find('a').first();
+			$tab.siblings().removeClass("current");
+			$tab.addClass("current");
+			var tabid = "#"+$link.attr("id").substring(2);
+			$(tabid).parent().children('.tab-content').hide();
+			$(tabid).show();
+			return true;
+		}
+		return false;
+	}	
+	
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.disableTab = function($tab) {
+		var $arrtabs,ret=false;
+		//console.log("disable tab")
+		//console.log($tab)
+		//$tab = _tabs.getTabObject($tab);
+		$arrtabs = _tabs.makeArray(_tabs.getTabObject($tab));
+		$arrtabs.forEach(function($elem,index,array){		
+			var $toDisable = $elem.not('.current');
+			if ($toDisable.length > 0) {
+				$toDisable.addClass("disabled");
+				ret=true;
+			}
+		});
+		return ret;
+	}
+
+	
+	// either tabtitle or a jquery object pointing to a tab(li)
+	_tabs.enableTab = function($tab) {
+		var $arrtabs,ret=false;
+		//console.log("enable tab")
+		//console.log($tab)
+		//$tab = _tabs.getTabObject($tab);
+		$arrtabs = _tabs.makeArray(_tabs.getTabObject($tab));
+		$arrtabs.forEach(function($elem,index,array){
+			if ($elem.length > 0) {
+				$elem.removeClass("disabled");
+				ret=true;
+			}
+		});
+		return ret;
+		
+	}
 </script>
 
 
 
 </head>
 <body>
-<h1>TAB demo</h1>
-<br />
-<button onclick="tabify()">Tab-ify the content</button>
-<br />
+<h1>TAB demo by Leo Lems</h1>
+<div class="mb10">
+	<strong>Generating Tabs</strong><br />
+<div class="ml40 mb10 mt10">
+	<table class="Ttable">
+		<tr>
+			<td><button onclick="_tabs.tabify()">Tab-ify the content</button></td>
+			<td><span class="cmd">_tabs.tabify()</span></td>
+		</tr>
+	</table>
+</div>	
+
+<strong>Enabling or disabling Tabs</strong><br />
+<div class="ml40 mb10 mt10">
+	<table class="Ttable">
+		<tr>
+			<td><button onclick="_tabs.disableTab(['Tab 2','Tab 3'])">Disable  Tab 2 and Tab 3</button></td>
+			<td><span class="cmd">_tabs.disableTab(['Tab 2','Tab 3'])</span></td>
+		</tr>
+		<tr>
+			<td><button onclick="_tabs.enableTab('Tab 3')">Enable  Tab 3</button></td>
+			<td><span class="cmd">_tabs.enableTab('Tab 3')</span></td>
+		</tr>
+		<tr>
+			<td><button onclick="_tabs.enableTab('Tab 2')">Enable  Tab 2</button></td>
+			<td><span class="cmd">_tabs.enableTab('Tab 2')</span></td>
+		</tr>
+	</table>
+</div>
+
+<strong>Activating Tabs</strong><br />
+<div class="ml40 mb10 mt10">
+	<table class="Ttable">
+		<tr>
+			<td><button onclick="_tabs.activateTab('Tab 2')">Activate  Tab 2</button></td>
+			<td><span class="cmd">_tabs.activateTab('Tab 2')</span></td>
+		</tr>
+		<tr>
+			<td><button onclick="_tabs.activateNextTab('Tab 1')">Activate Next Tab seen from Tab 1</button></td>
+			<td><span class="cmd">_tabs.activateNextTab('Tab 1')</span></td>
+		</tr>
+			<td><button onclick="_tabs.activatePrevTab('Tab 4')">Activate Previous Tab seen from Tab 4</button></td>
+			<td><span class="cmd">_tabs.activatePrevTab('Tab 4')</span></td>
+		</tr>
+	</table>
+</div>
+
+<br /><br />
 
 <!--
 <div class="tab-container">
