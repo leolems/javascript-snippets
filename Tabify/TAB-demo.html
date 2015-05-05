@@ -59,7 +59,7 @@
 
 
 	
-/* =================== TABS =================== */	
+/* =================== TABS PART =================== */	
 	.tab-container {
 		display: inline-block;
 		width:100%;
@@ -74,11 +74,6 @@
 		border-bottom: 2px solid #ddd;
 	}
 
-
-/*		border-top: 1px solid #d4d4d1;
-		border-right: 1px solid #d4d4d1;
-		border-left: 1px solid #d4d4d1;
-*/
 	.tabs-menu li {
 		height: 30px;
 		line-height: 30px;
@@ -97,10 +92,6 @@
 		border-top-right-radius: 6px;
 	}
 
-
-	
-/* 		border-bottom: 1px solid #fff; */
-	
 	.tabs-menu li.current {
 		position: relative;
 		background-color: #f8f8f8;
@@ -118,7 +109,6 @@
 		cursor:default;
 	}
 
-/* 		text-transform: uppercase; */	
 	.tabs-menu li a {
 		padding: 10px 10px 10px 0px;
 		color: #333;
@@ -135,8 +125,6 @@
 		cursor:default;
 	}
 
-/* 		border-top: 1px solid #d4d4d1; */
- 	
 	.tabs {
 		border-left: 1px solid #d4d4d1;
 		background-color: #f8f8f8;
@@ -153,180 +141,8 @@
 </style>
 
 <script type="text/javascript">
-
-	var _tabs = {};
-
-	
-	_tabs.myRandomString = function(neverused) {
-		var d=new Date(), uniqueid=d.getTime().toString(36), tstring="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ00",
-		ret=tstring.substr(Math.floor((Math.random() * 62)),1) + tstring.substr(Math.floor((Math.random() * 62)),1) + uniqueid + tstring.substr(Math.floor((Math.random() * 62)),1);
-		return (ret);
-	};	
-	
-	_tabs.makeArray = function(element) {
-		var result = [];
-		if ($.isArray(element)) { result = element; } else { result[0] = element;  }
-		return result;
-	};
-	
-	/*=====================================================================================================
-	==--						Tabify a container
-	======================================================================================================*/
-	_tabs.tabify = function() {
-		var $tabs;
-		var $newTabs=[];
-
-		//create tabs and tab structure
-		$('.tabs').each( function () {
-			var $tabs = $(this);
-		
-			// check if allready tab-ified
-			if ($tabs.parent().hasClass('tab-container')) {
-				return false
-			}
-			// store it for later use to handle other items
-			$newTabs.push($tabs);
-			// put on the wrapper !
-			$tabs.wrap('<div class="tab-container"></div>');
-			var $container = $tabs.parent();
-			$list = $container.children('ul:first');
-			if ($list.length === 0) {
-				$container.prepend('<ul class="tabs-menu"></ul>');
-				$list = $container.children('ul:first-child');
-			}	
-			$tabs.children('.tab-content').each( function(){
-				var $tab = $(this);
-				var newid = _tabs.myRandomString();
-				var theTitle = $tab.attr('title');
-				$list.append('<li><a href="#" id="a-'+newid+'" title="'+theTitle+'">'+theTitle+'</a></li>');
-				$tab.attr('id',newid).attr('title','');		// set new id anr remove the title
-			})
-		});
-		
-		// handle the rest off the actions needed to activate the tabs
-		$.each($newTabs, function() {
-			$newtab = $(this);
-			// make all tab content divs hidden
-			$newtab.find('.tab-content').hide();
-			// make first tab visible (active)
-			$newtab.children('.tab-content:first').show();
-			$newtab.parent().children('ul.tabs-menu').each( function() { 
-				$(this).children('li:first').addClass("current");  
-				$(this).find('li a').click(function(event) {
-					event.preventDefault();
-					var _t = $(this).parent();
-					if (	!(	_t.hasClass("disabled") || 
-								_t.is('[disabled]')			))	{
-						_tabs.activateTab(_t);		
-					}	
-				});
-			});
-		});
-	};	
-
-
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.getTabObject = function($tab) {
-		if ($tab instanceof jQuery) { return $tab;	}
-		if ($.isArray($tab) && typeof $tab[0] === "string") {
-			// array of tabnames
-			var arr=[];
-			$tab.forEach(function(elem,index,array){
-				arr.push($('.tabs-menu a[title="'+elem+'"]').parent());
-			});
-			return arr;
-		}
-		if (typeof $tab === "string") {
-			return $('.tabs-menu a[title="'+$tab+'"]').parent()
-		}
-		return $();															// empty jquery object !!
-	}
-	
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.activateFirstTab = function($tab) {
-		$tab = _tabs.getTabObject($tab);
-		var ft = $tab.siblings().not('.disabled').first();
-		return _tabs.activateTab(ft);
-	}
-	
-
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.activatePrevTab = function($tab) {
-		$tab = _tabs.getTabObject($tab);
-		if ($tab instanceof jQuery) {
-			var tab = $tab.prevAll().not('.disabled').first();
-			if (tab.length !== 0) {
-				return _tabs.activateTab(tab);
-			}
-		}	
-		return false;
-	}
-
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.activateNextTab = function($tab) {
-		$tab = _tabs.getTabObject($tab);
-		var tab = $tab.nextAll().not('.disabled').first();
-		if (tab.length !== 0) {
-			return _tabs.activateTab(tab);
-		}
-		return false;
-	}
-	
-	
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.activateTab = function($tab) {
-		$tab = _tabs.getTabObject($tab);
-		if ($tab.length > 0) {
-			if ($tab.hasClass("disabled")) {
-				// we cannot activate it because its disabled !!!!
-				// we will TRY to activate the previous enabled tab instead
-				return _tabs.activatePrevTab($tab);
-			}
-			var $link = $tab.find('a').first();
-			$tab.siblings().removeClass("current");
-			$tab.addClass("current");
-			var tabid = "#"+$link.attr("id").substring(2);
-			$(tabid).parent().children('.tab-content').hide();
-			$(tabid).show();
-			return true;
-		}
-		return false;
-	}	
-	
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.disableTab = function($tab) {
-		var $arrtabs,ret=false;
-		//console.log("disable tab")
-		//console.log($tab)
-		//$tab = _tabs.getTabObject($tab);
-		$arrtabs = _tabs.makeArray(_tabs.getTabObject($tab));
-		$arrtabs.forEach(function($elem,index,array){		
-			var $toDisable = $elem.not('.current');
-			if ($toDisable.length > 0) {
-				$toDisable.addClass("disabled");
-				ret=true;
-			}
-		});
-		return ret;
-	}
-
-	
-	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.enableTab = function($tab) {
-		var $arrtabs,ret=false;
-		//console.log("enable tab")
-		//console.log($tab)
-		//$tab = _tabs.getTabObject($tab);
-		$arrtabs = _tabs.makeArray(_tabs.getTabObject($tab));
-		$arrtabs.forEach(function($elem,index,array){
-			if ($elem.length > 0) {
-				$elem.removeClass("disabled");
-				ret=true;
-			}
-		});
-		return ret;
-		
-	}
+// tabify script minified
+var _tabs={};_tabs.myRandomString=function(){var t=new Date,a=t.getTime().toString(36),e="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ00",r=e.substr(Math.floor(62*Math.random()),1)+e.substr(Math.floor(62*Math.random()),1)+a+e.substr(Math.floor(62*Math.random()),1);return r},_tabs.makeArray=function(t){var a=[];return $.isArray(t)?a=t:a[0]=t,a},_tabs.tabify=function(){var t=[];$(".tabs").each(function(){var a=$(this);if(a.parent().hasClass("tab-container"))return!1;t.push(a),a.wrap('<div class="tab-container"></div>');var e=a.parent(),r=e.children("ul:first");0===r.length&&(e.prepend('<ul class="tabs-menu"></ul>'),r=e.children("ul:first-child")),a.children(".tab-content").each(function(){var t=$(this),a=t.attr("id");("string"!=typeof a||""===a)&&(a=_tabs.myRandomString());var e=t.attr("title");r.append('<li><a href="#" id="t-'+a+'" title="'+e+'">'+e+"</a></li>"),t.attr("id",a).attr("title","")})}),$.each(t,function(){var t=$(this);t.find(".tab-content").hide(),t.children(".tab-content:first").show(),t.parent().children("ul.tabs-menu").each(function(){$(this).children("li:first").addClass("current"),$(this).find("li a").click(function(t){t.preventDefault();var a=$(this).parent();a.hasClass("disabled")||_tabs.activateTab(a)})})})},_tabs.getTabObject=function(t){var a,e,r=[];return t instanceof jQuery?(a=_tabs.makeArray(t),a.forEach(function(t){"LI"===t[0].tagName&&r.push(t),"DIV"===t.tagName&&(e=$("#t-"+t.prop("id")),e.length>0&&"LI"===e[0].tagName&&r.push(e[0]))}),1===r.length?r[0]:r):$.isArray(t)&&t.length>0&&"string"==typeof t[0]||"string"==typeof t?(a=_tabs.makeArray(t),a.forEach(function(t){e=[],e="#"===t.slice(0,1)?$("#t-"+t.slice(1)).parent():$('.tabs-menu a[title="'+t+'"]').parent(),e.length>0&&"LI"===e[0].tagName&&r.push(e)}),1===r.length?r[0]:0===r.length?$():r):$()},_tabs.activateFirstTab=function(t){t=_tabs.getTabObject(t),$.isArray(t)&&t.length>0&&(t=t[0]);var a=t.siblings().not(".disabled").first();return _tabs.activateTab(a)},_tabs.activatePrevTab=function(t){if(t=_tabs.getTabObject(t),$.isArray(t)&&t.length>0&&(t=t[0]),t instanceof jQuery){var a=t.prevAll().not(".disabled").first();if(0!==a.length)return _tabs.activateTab(a)}return!1},_tabs.activateNextTab=function(t){t=_tabs.getTabObject(t),$.isArray(t)&&t.length>0&&(t=t[0]);var a=t.nextAll().not(".disabled").first();return 0!==a.length?_tabs.activateTab(a):!1},_tabs.activateTab=function(t){if(t=_tabs.getTabObject(t),$.isArray(t)&&t.length>0&&(t=t[0]),t.length>0){if(t.hasClass("disabled"))return console.log("tab cannot be activated (disabled)"),_tabs.activatePrevTab(t);var a=t.find("a").first();t.siblings().removeClass("current"),t.addClass("current");var e="#"+a.attr("id").substring(2);return $(e).parent().children(".tab-content").hide(),$(e).show(),!0}return!1},_tabs.disableTab=function(t){var a,e=!1;return a=_tabs.makeArray(_tabs.getTabObject(t)),a.forEach(function(t){var a=t.not(".current");a.length>0&&(a.addClass("disabled"),e=!0)}),e},_tabs.enableTab=function(t){var a,e=!1;return a=_tabs.makeArray(_tabs.getTabObject(t)),a.forEach(function(t){t.length>0&&(t.removeClass("disabled"),e=!0)}),e};
 </script>
 
 
@@ -336,18 +152,19 @@
 <h2>HTML</h2>
 <pre id="thehtml">
 	<div class="tabs">
-		<div class="tab-content" title="Tab 1">
+		<div class="tab-content" title="Tab 1" id="tab01">
 			<div class="tabs">
 				<div class="tab-content" title="Tab 1.1"> </div>
 				<div class="tab-content" title="Tab 1.2"> </div>
 			</div>
 		</div>
-		<div class="tab-content" title="Tab 2">	</div>
-		<div class="tab-content" title="Tab 3">	</div>
+		<div class="tab-content" title="Tab 2" id="tab02">	</div>
+		<div class="tab-content" title="Tab 3" id="tab03">	</div>
 	</div>	
 </pre>
 <div class="smallf">* notice that the tabs can be nested ;)</div>
 <h2>Javascript</h2>
+Note: the tabfunctions are using the tabtitles OR the tabid e.g. #tab01 to identify the tab<br /><br />
 <div class="grey">
 	<strong>Generate the tabs</strong><br />
 	<div class="ml40 mb10 mt10">
@@ -364,14 +181,17 @@
 			<tr>
 				<td><button onclick="_tabs.disableTab(['Tab 2','Tab 3'])">Disable  Tab 2 and Tab 3</button></td>
 				<td><span class="cmd">_tabs.disableTab(["Tab 2","Tab 3"])</span></td>
+				<td><span class="cmd">_tabs.disableTab(["#tab02","#tab03"])</span></td>
 			</tr>
 			<tr>
 				<td><button onclick="_tabs.enableTab('Tab 3')">Enable  Tab 3</button></td>
 				<td><span class="cmd">_tabs.enableTab("Tab 3")</span></td>
+				<td><span class="cmd">_tabs.enableTab("#tab03")</span></td>
 			</tr>
 			<tr>
 				<td><button onclick="_tabs.enableTab('Tab 2')">Enable  Tab 2</button></td>
 				<td><span class="cmd">_tabs.enableTab("Tab 2")</span></td>
+				<td><span class="cmd">_tabs.enableTab("#tab02")</span></td>
 			</tr>
 		</table>
 	</div>
@@ -381,13 +201,16 @@
 			<tr>
 				<td><button onclick="_tabs.activateTab('Tab 2')">Activate  Tab 2</button></td>
 				<td><span class="cmd">_tabs.activateTab("Tab 2")</span></td>
+				<td><span class="cmd">_tabs.activateTab("#tab02")</span></td>
 			</tr>
 			<tr>
 				<td><button onclick="_tabs.activateNextTab('Tab 1')">Activate Next Tab seen from Tab 1</button></td>
 				<td><span class="cmd">_tabs.activateNextTab("Tab 1")</span></td>
+				<td><span class="cmd">_tabs.activateNextTab("#tab01")</span></td>
 			</tr>
 				<td><button onclick="_tabs.activatePrevTab('Tab 4')">Activate Previous Tab seen from Tab 4</button></td>
 				<td><span class="cmd">_tabs.activatePrevTab("Tab 4")</span></td>
+				<td><span class="cmd">_tabs.activatePrevTab("#tab04")</span></td>
 			</tr>
 		</table>
 	</div>
@@ -408,21 +231,21 @@
     </ul>
 --> 
 	<div class="tabs">
-        <div class="tab-content" title="Tab 1">
+        <div class="tab-content" title="Tab 1" id="tab01">
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sit amet purus urna. Proin dictum fringilla enim, sit amet suscipit dolor dictum in. Maecenas porttitor, est et malesuada congue, ligula elit fermentum massa, sit amet porta odio est at velit. Sed nec turpis neque. Fusce at mi felis, sed interdum tortor. Nullam pretium, est at congue mattis, nibh eros pharetra lectus, nec posuere libero dui consectetur arcu. Quisque convallis facilisis fermentum. Nam tincidunt, diam nec dictum mattis, nunc dolor ultrices ipsum, in mattis justo turpis nec ligula. Curabitur a ante mauris. Integer placerat imperdiet diam, facilisis pretium elit mollis pretium. Sed lobortis, eros non egestas suscipit, dui dui euismod enim, ac ultricies arcu risus at tellus. Donec imperdiet congue ligula, quis vulputate mauris ultrices non. Aliquam rhoncus, arcu a bibendum congue, augue risus tincidunt massa, vel vehicula diam dolor eget felis.</p>
 			<div class="tabs">
 				<div class="tab-content" title="Tab 1.1">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
 				<div class="tab-content" title="Tab 1.2">Donec semper dictum sem, quis pretium sem malesuada non</div>
 			</div>
 		</div>
-        <div class="tab-content" title="Tab 2">
+        <div class="tab-content" title="Tab 2" id="tab02">
             <p>Donec semper dictum sem, quis pretium sem malesuada non. Proin venenatis orci vel nisl porta sollicitudin. Pellentesque sit amet massa et orci malesuada facilisis vel vel lectus. Etiam tristique volutpat auctor. Morbi nec massa eget sem ultricies fermentum id ut ligula. Praesent aliquet adipiscing dictum. Suspendisse dignissim dui tortor. Integer faucibus interdum justo, mattis commodo elit tempor id. Quisque ut orci orci, sit amet mattis nulla. Suspendisse quam diam, feugiat at ullamcorper eget, sagittis sed eros. Proin tortor tellus, pulvinar at imperdiet in, egestas sed nisl. Aenean tempor neque ut felis dignissim ac congue felis viverra. </p>
         
         </div>
-        <div class="tab-content" title="Tab 3">
+        <div class="tab-content" title="Tab 3" id="tab03">
             <p>Duis egestas fermentum ipsum et commodo. Proin bibendum consectetur elit, hendrerit porta mi dictum eu. Vestibulum adipiscing euismod laoreet. Vivamus lobortis tortor a odio consectetur pulvinar. Proin blandit ornare eros dictum fermentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur laoreet, ante aliquet molestie laoreet, lectus odio fringilla purus, id porttitor erat velit vitae mi. Nullam posuere nunc ut justo sollicitudin interdum. Donec suscipit eros nec leo condimentum fermentum. Nunc quis libero massa. Integer tempus laoreet lectus id interdum. Integer facilisis egestas dui at convallis. Praesent elementum nisl et erat iaculis a blandit ligula mollis. Vestibulum vitae risus dui, nec sagittis arcu. Nullam tortor enim, placerat quis eleifend in, viverra ac lacus. Ut aliquam sapien ut metus hendrerit auctor dapibus justo porta. </p>
         </div>
-        <div class="tab-content" title="Tab 4">
+        <div class="tab-content" title="Tab 4" id="tab04">
 			<div class="tabs">
 				<div class="tab-content" title="Tab 4.1">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
 				<div class="tab-content" title="Tab 4.2">Donec semper dictum sem, quis pretium sem malesuada non</div>
