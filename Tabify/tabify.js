@@ -1,10 +1,12 @@
 /*=====================================================================================
 		Library for generating tab structures
 	
+		requires: jQuery
+		
 		Author:	L.Lems
 ======================================================================================*/
 
-	var _tabs = {};
+	var _tabs = { version: "1.1", versiondate:"20150528" };
 	
 	_tabs.myRandomString = function(neverused) {
 		var d=new Date(), uniqueid=d.getTime().toString(36), tstring="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ00",
@@ -30,7 +32,7 @@
 		
 			// check if allready tab-ified
 			if ($tabs.parent().hasClass('tab-container')) {
-				return false;
+				return true;
 			}
 			// store it for later use to handle other items
 			$newTabs.push($tabs);
