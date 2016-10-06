@@ -186,7 +186,13 @@
 	
 	
 	// either tabtitle or a jquery object pointing to a tab(li)
-	_tabs.activateTab = function($tab) {
+	_tabs.activateTab = function($tab,pEnable) {
+		var enableTab = false;
+		if (typeof pEnable === "boolean") {
+			enableTab = pEnable;
+		}
+		
+		
 		$tab = _tabs.getTabObject($tab);
 		if ($.isArray($tab) && $tab.length > 0) {
 			// we could get an array with multiple tabs...., but we only can activate ONE ?!, SO we will take the first item !!
@@ -194,6 +200,11 @@
 			$tab = $tab[0];
 		}
 		if ($tab.length > 0) {
+			// enable, the tab
+			if (enableTab) {
+				$tab.removeClass("disabled");
+			}
+			
 			// jquery object
 			if ($tab.hasClass("disabled")) {
 				// we cannot activate it because its disabled !!!!
