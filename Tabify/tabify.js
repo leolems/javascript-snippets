@@ -91,7 +91,7 @@
 
 
 	/* create a pubic DOM variable called _tabs */
-	window._tabs = {};
+	window._tabs = { version: "20161006" };
 	
 	/*=====================================================================================================
 	==--						Tabify a container
