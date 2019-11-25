@@ -17,25 +17,18 @@
 //	split a string using an array (to split up by using multiple arguments)
 if(!String.prototype.arrsplit) {
 	String.prototype.arrsplit = function (arr) {
-		var i,e,len,lene,tmp,res = [], tempres=[];
-		res[0] = this;
+		var i, len,tmp, a=[];
 		if (arr && !(arr.propertyIsEnumerable('length')) && typeof arr === 'object' && typeof arr.length === 'number') {
-			len = arr.length;
+			a = arr;
 		} else {
-			len=1;
+			a.push(arr);
 		}
+		len = a.length;
+		tmp = this;
 		for (i=0; i<len; i++) {
-			// walk through all split items in the array
-			tempres = [];
-			lene=res.length;
-			for (e=0;e<lene;e++){
-				// split all elements inside res
-				tmp = res[e].split(arr[i]);
-				tempres = tempres.concat(tmp);
-			}
-			res=tempres;
+			tmp = tmp.split(a[i]).join('\x1F');
 		}
-		return res;
+		return tmp.split('\x1F');
 	};
 }
 
